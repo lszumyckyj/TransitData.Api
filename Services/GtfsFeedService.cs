@@ -23,18 +23,6 @@ namespace TransitData.Api.Services
             Parser = FeedMessage.Parser.WithExtensionRegistry(registry);
         }
 
-        private readonly Dictionary<string, string> FeedUrls = new()
-        {
-            ["1234567S"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs",
-            ["ACE"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace",
-            ["BDFM"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm",
-            ["G"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g",
-            ["JZ"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-jz",
-            ["L"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-l",
-            ["NQRW"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-nqrw",
-            ["SI"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si"
-        };
-
         public GtfsFeedService(HttpClient httpClient, ILogger<GtfsFeedService> logger)
         {
             HttpClient = httpClient;
@@ -49,7 +37,7 @@ namespace TransitData.Api.Services
             var allTrains = new List<TrainInfo>();
             var allStations = new HashSet<StationInfo>();
 
-            var feedTasks = FeedUrls.Select(async feed =>
+            var feedTasks = GtfsRealTimeFeedUrls.All.Select(async feed =>
             {
                 try
                 {
