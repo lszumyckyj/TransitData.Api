@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddHttpClient<IMtaService, MtaService>();
+builder.Services.AddHttpClient<IGtfsFeedService, GtfsFeedService>();
 builder.Services.AddHostedService<MtaDataCollectorService>();
 
 var app = builder.Build();

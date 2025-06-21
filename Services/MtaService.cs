@@ -6,13 +6,13 @@ using TransitData.Api.Data.Static;
 
 namespace TransitData.Api.Services
 {
-    public class MtaService : IMtaService
+    public class GtfsFeedService : IGtfsFeedService
     {
         private readonly HttpClient HttpClient;
-        private readonly ILogger<MtaService> Logger;
+        private readonly ILogger<GtfsFeedService> Logger;
         private static readonly MessageParser<FeedMessage> Parser;
 
-        static MtaService()
+        static GtfsFeedService()
         {
             var registry = new ExtensionRegistry
             {
@@ -35,7 +35,7 @@ namespace TransitData.Api.Services
             ["SI"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si"
         };
 
-        public MtaService(HttpClient httpClient, ILogger<MtaService> logger)
+        public GtfsFeedService(HttpClient httpClient, ILogger<GtfsFeedService> logger)
         {
             HttpClient = httpClient;
             Logger = logger;

@@ -7,13 +7,13 @@ namespace TransitData.Api.Services
 {
     public class MtaDataCollectorService : BackgroundService
     {
-        private readonly IMtaService MtaService;
+        private readonly IGtfsFeedService MtaService;
         private readonly IDatabase Redis;
         private readonly ILogger<MtaDataCollectorService> Logger;
         private readonly TimeSpan Interval = TimeSpan.FromSeconds(30);
 
         public MtaDataCollectorService(
-            IMtaService mtaService,
+            IGtfsFeedService mtaService,
             IConnectionMultiplexer redis,
             ILogger<MtaDataCollectorService> logger)
         {
