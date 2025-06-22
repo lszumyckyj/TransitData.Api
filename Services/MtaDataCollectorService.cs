@@ -1,26 +1,19 @@
-using System.Text.Json;
-using StackExchange.Redis;
 using TransitData.Api.Models.DTOs;
 using TransitData.Api.Services.Interfaces;
+using TransitData.Api.Repositories.Interfaces;
+using Google.Protobuf.WellKnownTypes;
 
 namespace TransitData.Api.Services
 {
-    public class MtaDataCollectorService : BackgroundService
+    public class MtaDataCollectorService(
+        IGtfsFeedService mtaService,
+        IServiceProvider serviceProvider,
+        ILogger<MtaDataCollectorService> logger) : BackgroundService
     {
-        private readonly IGtfsFeedService MtaService;
-        private readonly IDatabase Redis;
-        private readonly ILogger<MtaDataCollectorService> Logger;
+        private readonly IGtfsFeedService MtaService = mtaService;
+        private readonly IServiceProvider ServiceProvider = serviceProvider;
+        private readonly ILogger<MtaDataCollectorService> Logger = logger;
         private readonly TimeSpan Interval = TimeSpan.FromSeconds(30);
-
-        public MtaDataCollectorService(
-            IGtfsFeedService mtaService,
-            IConnectionMultiplexer redis,
-            ILogger<MtaDataCollectorService> logger)
-        {
-            MtaService = mtaService;
-            Redis = redis.GetDatabase();
-            Logger = logger;
-        }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -50,24 +43,23 @@ namespace TransitData.Api.Services
 
         private async Task CollectAndStoreData()
         {
-            var startTime = DateTime.UtcNow;
+            DateTime startTime = DateTime.UtcNow;
             Logger.LogInformation("Starting MTA data collection at {Time}", startTime);
 
             try
             {
-                var data = await MtaService.GetAllTrainDataAsync();
+                MtaAllDataResponse data = await MtaService.GetAllTransitDataAsync();
 
-                var dataJson = JsonSerializer.Serialize(data);
-                await Redis.StringSetAsync("mta:all_data", dataJson, TimeSpan.FromMinutes(2));
+                using (var scope = ServiceProvider.CreateAsyncScope())
+                {
+                    var transitDataRepository = scope.ServiceProvider.GetService<ITransitDataRepository>()
+                        ?? throw new InvalidOperationException("ITransitDataRepository not registered.");
+                    await transitDataRepository.StoreAllTransitDataAsync(data);
+                    await transitDataRepository.StoreTrainsByStationAsync(data.Trains);
+                    await transitDataRepository.StoreStationsAsync(data.Stations);
+                }
 
-                // Store individual train arrivals by station for faster lookups
-                await StoreTrainsByStation(data.Trains);
-
-                // Store stations list
-                var stationsJson = JsonSerializer.Serialize(data.Stations);
-                await Redis.StringSetAsync("mta:stations", stationsJson, TimeSpan.FromHours(1));
-
-                var duration = DateTime.UtcNow - startTime;
+                TimeSpan duration = DateTime.UtcNow - startTime;
                 Logger.LogInformation("Successfully collected and stored {TrainCount} trains and {StationCount} stations in {Duration}ms",
                     data.TotalTrains, data.TotalStations, duration.TotalMilliseconds);
             }
@@ -76,24 +68,6 @@ namespace TransitData.Api.Services
                 Logger.LogError(ex, "Failed to collect and store MTA data");
                 throw;
             }
-        }
-
-        private async Task StoreTrainsByStation(List<TrainInfo> trains)
-        {
-            // Group trains by station for faster station-specific lookups
-            var trainsByStation = trains
-                .Where(t => t.ArrivalTime.HasValue)
-                .GroupBy(t => t.StationId)
-                .ToDictionary(g => g.Key, g => g.OrderBy(t => t.ArrivalTime).ToList());
-
-            var tasks = trainsByStation.Select(async kvp =>
-            {
-                var key = $"mta:station:{kvp.Key}";
-                var json = JsonSerializer.Serialize(kvp.Value);
-                await Redis.StringSetAsync(key, json, TimeSpan.FromMinutes(2));
-            });
-
-            await Task.WhenAll(tasks);
         }
     }
 }

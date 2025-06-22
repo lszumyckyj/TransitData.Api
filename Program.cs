@@ -4,6 +4,8 @@ using StackExchange.Redis;
 using TransitData.Api.Data;
 using TransitData.Api.Services;
 using TransitData.Api.Services.Interfaces;
+using TransitData.Api.Repositories;
+using TransitData.Api.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
@@ -36,6 +38,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpClient<IGtfsFeedService, GtfsFeedService>();
+builder.Services.AddScoped<ITransitDataRepository, TransitDataRepository>();
 builder.Services.AddHostedService<MtaDataCollectorService>();
 
 var app = builder.Build();

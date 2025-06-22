@@ -32,7 +32,7 @@ namespace TransitData.Api.Services
             HttpClient.DefaultRequestHeaders.Add("User-Agent", "TransitData.Api/1.0");
         }
 
-        public async Task<MtaAllDataResponse> GetAllTrainDataAsync()
+        public async Task<MtaAllDataResponse> GetAllTransitDataAsync()
         {
             var allTrains = new List<TrainInfo>();
             var allStations = new HashSet<StationInfo>();
@@ -67,7 +67,6 @@ namespace TransitData.Api.Services
 
             (string FeedName, FeedMessage? feed)[] feedResults = await Task.WhenAll(feedTasks);
 
-            // Process each feed
             foreach (var (feedName, feed) in feedResults)
             {
                 if (feed == null) continue;
@@ -76,7 +75,6 @@ namespace TransitData.Api.Services
 
                 foreach (var entity in feed.Entity)
                 {
-                    // Process trip updates (train arrivals)
                     if (entity.TripUpdate != null)
                     {
                         ProcessTripUpdate(entity.TripUpdate, feedName, allTrains, allStations);
