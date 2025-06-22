@@ -1,7 +1,6 @@
 using TransitData.Api.Models.DTOs;
 using TransitData.Api.Services.Interfaces;
 using TransitData.Api.Repositories.Interfaces;
-using Google.Protobuf.WellKnownTypes;
 
 namespace TransitData.Api.Services
 {
