@@ -32,12 +32,12 @@ namespace TransitData.Api.Services
             HttpClient.DefaultRequestHeaders.Add("User-Agent", "TransitData.Api/1.0");
         }
 
-        public async Task<MtaAllDataResponse> GetAllTransitDataAsync()
+        public async Task<AllRealtimeDataResponse> GetAllTransitRealtimeDataAsync()
         {
-            var allTrains = new List<TrainInfo>();
-            var allStations = new HashSet<StationInfo>();
+            var allTrains = new List<Train>();
+            var allStations = new HashSet<Station>();
 
-            var feedTasks = GtfsRealTimeFeedUrls.All.Select(async feed =>
+            var feedTasks = GtfsRealtimeFeedUrls.All.Select(async feed =>
             {
                 try
                 {
@@ -82,7 +82,7 @@ namespace TransitData.Api.Services
                 }
             }
 
-            return new MtaAllDataResponse
+            return new AllRealtimeDataResponse
             {
                 LastUpdated = DateTime.UtcNow,
                 Trains = allTrains.OrderBy(t => t.ArrivalTime).ToList(),
@@ -92,7 +92,7 @@ namespace TransitData.Api.Services
             };
         }
 
-        private void ProcessTripUpdate(TripUpdate tripUpdate, string feedName, List<TrainInfo> allTrains, HashSet<StationInfo> allStations)
+        private void ProcessTripUpdate(TripUpdate tripUpdate, string feedName, List<Train> allTrains, HashSet<Station> allStations)
         {
             var trip = tripUpdate.Trip;
 
@@ -141,7 +141,7 @@ namespace TransitData.Api.Services
                 // Only add trains with valid arrival or departure times
                 if (stopUpdate.Arrival?.Time != null || stopUpdate.Departure?.Time != null)
                 {
-                    allTrains.Add(new TrainInfo
+                    allTrains.Add(new Train
                     {
                         RouteId = trip.RouteId ?? string.Empty,
                         TripId = trip.TripId ?? string.Empty,
@@ -160,7 +160,7 @@ namespace TransitData.Api.Services
                     });
                 }
 
-                allStations.Add(new StationInfo
+                allStations.Add(new Station
                 {
                     StationId = stopUpdate.StopId ?? string.Empty,
                     StationName = GetStationName(stopUpdate.StopId ?? string.Empty),

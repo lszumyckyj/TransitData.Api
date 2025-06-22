@@ -4,14 +4,14 @@ using TransitData.Api.Repositories.Interfaces;
 
 namespace TransitData.Api.Services
 {
-    public class MtaDataCollectorService(
-        IGtfsFeedService mtaService,
+    public class TransitRealtimeDataCollectorService(
+        IGtfsFeedService gtfsFeedService,
         IServiceProvider serviceProvider,
-        ILogger<MtaDataCollectorService> logger) : BackgroundService
+        ILogger<TransitRealtimeDataCollectorService> logger) : BackgroundService
     {
-        private readonly IGtfsFeedService MtaService = mtaService;
+        private readonly IGtfsFeedService GtfsFeedService = gtfsFeedService;
         private readonly IServiceProvider ServiceProvider = serviceProvider;
-        private readonly ILogger<MtaDataCollectorService> Logger = logger;
+        private readonly ILogger<TransitRealtimeDataCollectorService> Logger = logger;
         private readonly TimeSpan Interval = TimeSpan.FromSeconds(30);
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -22,7 +22,7 @@ namespace TransitData.Api.Services
             {
                 try
                 {
-                    await CollectAndStoreData();
+                    await CollectAndStoreRealtimeData();
                     await Task.Delay(Interval, stoppingToken);
                 }
                 catch (OperationCanceledException)
@@ -40,22 +40,22 @@ namespace TransitData.Api.Services
             Logger.LogInformation("MTA Data Collector Service stopped");
         }
 
-        private async Task CollectAndStoreData()
+        private async Task CollectAndStoreRealtimeData()
         {
             DateTime startTime = DateTime.UtcNow;
             Logger.LogInformation("Starting MTA data collection at {Time}", startTime);
 
             try
             {
-                MtaAllDataResponse data = await MtaService.GetAllTransitDataAsync();
+                AllRealtimeDataResponse data = await GtfsFeedService.GetAllTransitRealtimeDataAsync();
 
                 using (var scope = ServiceProvider.CreateAsyncScope())
                 {
-                    var transitDataRepository = scope.ServiceProvider.GetService<ITransitDataRepository>()
-                        ?? throw new InvalidOperationException("ITransitDataRepository not registered.");
-                    await transitDataRepository.StoreAllTransitDataAsync(data);
-                    await transitDataRepository.StoreTrainsByStationAsync(data.Trains);
-                    await transitDataRepository.StoreStationsAsync(data.Stations);
+                    var transitRealtimeDataRepository = scope.ServiceProvider.GetService<ITransitRealtimeDataRepository>()
+                        ?? throw new InvalidOperationException("ITransitRealtimeDataRepository not registered.");
+                    await transitRealtimeDataRepository.StoreAllTransitRealtimeDataAsync(data);
+                    await transitRealtimeDataRepository.StoreTrainsByStationRealtimeAsync(data.Trains);
+                    await transitRealtimeDataRepository.StoreStationsAsync(data.Stations);
                 }
 
                 TimeSpan duration = DateTime.UtcNow - startTime;

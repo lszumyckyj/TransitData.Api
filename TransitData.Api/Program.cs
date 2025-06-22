@@ -38,8 +38,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddHttpClient<IGtfsFeedService, GtfsFeedService>();
-builder.Services.AddScoped<ITransitDataRepository, TransitDataRepository>();
-builder.Services.AddHostedService<MtaDataCollectorService>();
+builder.Services.AddScoped<ITransitRealtimeDataRepository, TransitRealtimeDataRepository>();
+builder.Services.AddHostedService<TransitRealtimeDataCollectorService>();
 
 var app = builder.Build();
 

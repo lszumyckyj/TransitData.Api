@@ -1,6 +1,6 @@
 namespace TransitData.Api.Models.DTOs
 {
-    public record TrainInfo
+    public record Train
     {
         public string RouteId { get; init; } = string.Empty; // "6", "N", "Q", etc.
         public string TripId { get; init; } = string.Empty;

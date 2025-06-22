@@ -1,6 +1,6 @@
 namespace TransitData.Api.Data.Static
 {
-    public static class GtfsRealTimeFeedUrls
+    public static class GtfsRealtimeFeedUrls
     {
         public static readonly Dictionary<string, string> All = new()
         {

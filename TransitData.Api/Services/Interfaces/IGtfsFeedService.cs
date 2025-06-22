@@ -4,6 +4,6 @@ namespace TransitData.Api.Services.Interfaces
 {
     public interface IGtfsFeedService
     {
-        Task<MtaAllDataResponse> GetAllTransitDataAsync();
+        Task<AllRealtimeDataResponse> GetAllTransitRealtimeDataAsync();
     }
 }
