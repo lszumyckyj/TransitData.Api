@@ -1,4 +1,4 @@
-# TransitData.Api
+# TransitDataApi
 A .NET 9 Web API that collects and serves real-time MTA (Metropolitan Transportation Authority) subway data from GTFS (General Transit Feed Specification) feeds.
 
 ##  Overview
