@@ -14,4 +14,4 @@ namespace TransitData.Api.Data.Static
             ["SI"] = "Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si"
         };
     }
-} 
+}
